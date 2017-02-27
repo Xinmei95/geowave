@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.restlet.data.Status;
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,12 +22,14 @@ import mil.nga.giat.geowave.core.cli.api.Command;
 import mil.nga.giat.geowave.core.cli.api.OperationParams;
 import mil.nga.giat.geowave.core.cli.operations.config.ConfigSection;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
+import mil.nga.giat.geowave.core.cli.parser.ManualOperationParams;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
 
 @GeowaveOperation(name = "addstore", parentOperation = ConfigSection.class)
 @Parameters(commandDescription = "Create a store within Geowave")
-public class AddStoreCommand implements
-		Command
+public class AddStoreCommand 
+extends ServerResource
+implements Command
 {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(AddStoreCommand.class);
@@ -89,8 +95,7 @@ public class AddStoreCommand implements
 		return true;
 	}
 
-	@Override
-	public void execute(
+	public void computeResults(
 			OperationParams params ) {
 
 		File propFile = (File) params.getContext().get(
@@ -130,6 +135,31 @@ public class AddStoreCommand implements
 		ConfigOptions.writeProperties(
 				propFile,
 				existingProps);
+	}
+	
+	@Override
+	public void execute(
+			OperationParams params ) {
+		computeResults(params);
+	}
+	
+	@Post("json")
+	public void restPost() {
+		String name = getQueryValue("name");
+		if (name == null) {
+			this.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			return;
+		}
+		parameters.add(name);
+		if (getQueryValue("default") != null) {
+			makeDefault = true;
+		}
+		
+		OperationParams params = new ManualOperationParams();
+		params.getContext().put(
+				ConfigOptions.PROPERTIES_FILE_CONTEXT,
+				ConfigOptions.getDefaultPropertyFile());
+		computeResults(params);
 	}
 
 	public DataStorePluginOptions getPluginOptions() {
