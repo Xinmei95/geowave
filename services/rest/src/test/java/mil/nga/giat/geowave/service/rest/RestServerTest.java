@@ -37,6 +37,7 @@ import java.util.Properties;
 
 public class RestServerTest
 {
+	public TemporaryFolder tempFolder = new TemporaryFolder();
 
 	@BeforeClass
 	public static void runServer() {
@@ -189,6 +190,38 @@ public class RestServerTest
 
 	// Tests geowave/config/addindex, cpindex, rmindex
 	@Test
+	public void geowave_config_addstore()
+			throws IOException {
+		ClientResource resource = new ClientResource(
+				"http://localhost:5152/geowave/config/addstore");
+
+		File configFile = tempFolder.newFile("test_config");
+
+		Form form = new Form();
+		form.add(
+				"name",
+				"memory");
+		form.add(
+				"config_file",
+				configFile.getAbsolutePath());
+		try {
+
+			resource.post(
+					form).write(
+					System.out);
+
+		}
+		catch (ResourceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// JSONObject obj = new JSONObject();
+		// obj.put("name", "hbase");
 	public void geowave_config_index()
 			throws ResourceException,
 			IOException {

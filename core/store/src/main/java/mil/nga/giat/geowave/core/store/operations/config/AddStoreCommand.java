@@ -216,10 +216,14 @@ public class AddStoreCommand extends
 			return;
 		}
 
+		String configFileParameter = form.getFirstValue("config_file");
+		File configFile = (configFileParameter != null) ? new File(
+				configFileParameter) : ConfigOptions.getDefaultPropertyFile();
+
 		OperationParams params = new ManualOperationParams();
 		params.getContext().put(
 				ConfigOptions.PROPERTIES_FILE_CONTEXT,
-				ConfigOptions.getDefaultPropertyFile());
+				configFile);
 
 		prepare(params);
 
